@@ -1,0 +1,5 @@
+---
+- name: Restart Nginx
+  ansible.builtin.shell:
+    cmd: "nginx -t && pkill -HUP nginx"
+  changed_when: true

@@ -1,0 +1,44 @@
+---
+- name: Ensure ansible user exists
+  ansible.builtin.user:
+    name: ansible
+    shell: /bin/bash
+    create_home: true
+    groups: sudo
+    append: true
+
+- name: Create SSH directory
+  ansible.builtin.file:
+    path: /home/ansible/.ssh
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: '0700'
+
+- name: Configure authorized SSH key
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ ssh_public_key }}"
+    state: present
+
+- name: Configure passwordless sudo
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/ansible
+    content: "ansible ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: '/usr/sbin/visudo -cf %s'
+
+- name: Configure SSH hardening
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/hardening.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+      PubkeyAuthentication yes
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart SSH

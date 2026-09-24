@@ -1,0 +1,37 @@
+---
+- name: Create SSL directory on vm1
+  ansible.builtin.file:
+    path: /etc/nginx/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: inventory_hostname == "vm1"
+
+- name: Generate self-signed TLS certificate
+  ansible.builtin.command:
+    cmd: >
+      openssl req -x509 -nodes -newkey rsa:2048
+      -days 365
+      -keyout /etc/nginx/ssl/public.vm1.local.key
+      -out /etc/nginx/ssl/public.vm1.local.crt
+      -subj "/CN=public.vm1.local"
+      -addext "subjectAltName=DNS:public.vm1.local"
+    creates: /etc/nginx/ssl/public.vm1.local.crt
+  when: inventory_hostname == "vm1"
+
+- name: Set SSL key permissions
+  ansible.builtin.file:
+    path: /etc/nginx/ssl/public.vm1.local.key
+    owner: root
+    group: root
+    mode: '0600'
+  when: inventory_hostname == "vm1"
+
+- name: Set SSL certificate permissions
+  ansible.builtin.file:
+    path: /etc/nginx/ssl/public.vm1.local.crt
+    owner: root
+    group: root
+    mode: '0644'
+  when: inventory_hostname == "vm1"

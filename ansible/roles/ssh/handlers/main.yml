@@ -1,0 +1,5 @@
+---
+- name: Restart SSH
+  ansible.builtin.shell:
+    cmd: "pkill -HUP sshd"
+  changed_when: true

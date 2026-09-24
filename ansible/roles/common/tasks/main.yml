@@ -1,0 +1,31 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - docker.io
+      - iptables
+    state: present
+
+- name: Add ansible user to docker group
+  ansible.builtin.user:
+    name: ansible
+    groups: docker
+    append: true
+
+- name: Copy V7 firewall script
+  ansible.builtin.copy:
+    src: v7-firewall.sh
+    dest: /usr/local/bin/v7-firewall.sh
+    mode: '0755'
+
+- name: Apply V7 firewall
+  ansible.builtin.command:
+    cmd: /usr/local/bin/v7-firewall.sh
+    creates: /etc/v7-firewall-applied

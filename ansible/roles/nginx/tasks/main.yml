@@ -1,0 +1,43 @@
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: Configure backend Nginx on vm2 and vm3
+  ansible.builtin.copy:
+    dest: /etc/nginx/sites-available/default
+    content: |
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+
+          server_name _;
+
+          location / {
+              default_type text/plain;
+              return 200 "Hostname: $hostname\nTime: $time_iso8601\n";
+          }
+      }
+    owner: root
+    group: root
+    mode: '0644'
+  when: inventory_hostname != "vm1"
+  notify: Restart Nginx
+
+- name: Configure reverse proxy on vm1
+  ansible.builtin.template:
+    src: vm1-proxy.conf.j2
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: '0644'
+  when: inventory_hostname == "vm1"
+  notify: Restart Nginx
+
+- name: Ensure Nginx is enabled and running
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started

@@ -1,0 +1,13 @@
+---
+- name: Configure V7 assessment VMs
+  hosts: vm
+  become: true
+
+  pre_tasks:
+    - name: Include TLS setup
+      ansible.builtin.include_tasks: roles/nginx/tasks/tls.yml
+
+  roles:
+    - common
+    - ssh
+    - nginx
