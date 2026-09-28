@@ -20,4 +20,8 @@ RUN apt-get update && \
 
 RUN mkdir -p /run/sshd
 
-CMD ["/usr/sbin/sshd", "-D"]
+
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+CMD ["/usr/local/bin/start.sh"]
